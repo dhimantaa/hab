@@ -1,0 +1,6 @@
+*.pyc
+actuation/*.pyc
+configuration/*.pyc
+parsing/*.pyc
+voice/*.pyc
+vpn/*.pyc
