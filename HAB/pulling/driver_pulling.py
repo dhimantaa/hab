@@ -13,6 +13,7 @@ data, and try to send later when the
 server is accessible
 """
 
+
 from parsing.parser import Parser
 
 _author_ = 'dhimantarun19@gmail.com'
@@ -30,7 +31,7 @@ class Hadp:
 
     def __init__(self, filename):
         """
-        This constructor initialize the the parameter required
+        This constructor initialize the the required parameter
         """
 
         parser = Parser(filename=filename)
@@ -40,11 +41,29 @@ class Hadp:
         self.gpio = parser.segregated(parser.read(),'GPIO')
         self.ddl = parser.segregated(parser.read(),'DATA_DELIVERY_LOCATION')
 
-    def payload_creation(self):
+    def payload_creation(self, data):
         """
-        :return:
+        This method create the payload
+        UUID: unique identification key
+        ID: device id
+        RATE: rate of data pulling
+        GPIO: gpio pin on which hardware is controlling
+        DDL: data delivery location
+        VALUE: device sensed value
+        TIME: time on which device value was sensed
+        :return: dictionary of payload
         """
-        pass
+
+        payload = {}
+        payload['UUID'] = self.uuid
+        payload['ID'] = self.id
+        payload['RATE'] = self.rate
+        payload['GPIO'] = self.gpio
+        payload['DDL'] = self.ddl
+        payload['VALUE'] = data[0]
+        payload['TIME'] = data[1]
+
+        return payload
 
     def scrap_data(self):
         """
@@ -57,7 +76,3 @@ class Hadp:
         :return:
         """
         pass
-
-
-
-

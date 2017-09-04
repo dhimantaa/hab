@@ -1,6 +1,11 @@
 *.pyc
-actuation/*.pyc
-configuration/*.pyc
-parsing/*.pyc
-voice/*.pyc
-vpn/*.pyc
+HAB/*.pyc
+HAB_django/*.pyc
+HAB/actuation/*.pyc
+HAB/async/*.pyc
+HAB/configuration/*.pyc
+HAB/migrations/*.pyc
+HAB/parsing/*.pyc
+HAB/pulling/*.pyc
+HAB/voice/*.pyc
+HAB/vpn/*.pyc
