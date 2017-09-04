@@ -6,7 +6,7 @@ actuation and data pulling from the external hardware
 
 import os
 from configobj import ConfigObj
-from setting import ROOT_DIR
+from django.conf import settings
 
 _author_ = 'dhimantarun19@gmail.com'
 
@@ -14,6 +14,7 @@ _author_ = 'dhimantarun19@gmail.com'
 class Parser:
     """
     This class is responsible to parse the configuration
+    of attached hardware and
     defines in configuration/
     """
 
@@ -22,7 +23,7 @@ class Parser:
         Initialize the configuration file path
         """
 
-        self.config_path = os.path.join(ROOT_DIR, 'configuration/'+filename)
+        self.config_path = os.path.join(settings.BASE_DIR, 'HAB/configuration/'+filename)
 
     def read(self):
         """
@@ -30,6 +31,7 @@ class Parser:
         convert it into configobj dictionary
         :return: configobj dictionary of config file
         """
+        print (self.config_path)
 
         return ConfigObj(self.config_path)
 
