@@ -4,7 +4,7 @@ hardware, This module will read the configuration
 file and control the GPIO pin accordingly
 """
 
-from parsing.parser import Parser
+from HAB.parsing.parser import Parser
 
 _author_ = 'dhimantarun19@gmail.com'
 

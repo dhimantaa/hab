@@ -6,14 +6,17 @@ from django.shortcuts import render
 
 # Create your views here.
 from django.http import HttpResponse
+import HAB.actuation.driver_actuation as da
 import json
+
+obj = Parser(filename='home.ini')
 
 
 def index(request):
-    obj = Parser(filename='home.ini')
     print (obj.__doc__)
     return HttpResponse(json.dumps(obj.read()),content_type='application/json')
 
 
-def async(request):
+def actuation(request, device, states):
+    driver = da.Hada('home.ini')
     pass

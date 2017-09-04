@@ -14,7 +14,7 @@ server is accessible
 """
 
 
-from parsing.parser import Parser
+from HAB.parsing.parser import Parser
 
 _author_ = 'dhimantarun19@gmail.com'
 
