@@ -9,16 +9,34 @@ obj = Parser(filename='home.ini')
 
 
 def index(request):
-    print (obj.__doc__)
-    return HttpResponse(json.dumps(obj.read()),content_type='application/json')
+    return HttpResponse(
+        json.dumps(obj.read()),
+        content_type='application/json'
+    )
 
 
 def actuation(request, device, state):
+    """
+    This method is the interface between the outside
+    and the RPi GPIO control
+    By this view we can control the GPIO
+    :param request: http request object
+    :param device: contain the device id
+    :param state: contain the new state to change
+    :return: json response of state change
+    """
     driver = da.Hada('home.ini')
-    status = driver.intercept_cmd(state,device)
+    status,change_state = driver.intercept_cmd(state,device)
+    print (state,change_state)
     payload = driver.payload_creation()
     driver.save_data(payload)
     if status:
-        return HttpResponse(json.dumps({'Status': 'Success','New state': state}),content_type='application/json')
+        return HttpResponse(
+            json.dumps({'Status': 'Success', 'New state': change_state, 'Old state': state}),
+            content_type='application/json'
+        )
     else:
-        return HttpResponse(json.dumps({'Status': 'Failure','New state': 'Unknown'}), content_type='application/json')
+        return HttpResponse(
+            json.dumps({'Status': 'Failure', 'New state': change_state, 'Old state': state}),
+            content_type='application/json'
+        )

@@ -36,6 +36,7 @@ class Hada:
 
     def payload_creation(self):
         """
+        This method create the payload dictionary
         :return: payload contain different information
         """
         payload = {}
@@ -49,24 +50,32 @@ class Hada:
 
     def intercept_cmd(self, new_state, device):
         """
-        :return: None
+        This function will change the GPIO state
+        as per the http requested device from the
+        gpio mapping vs id in configuration
+        :return: status and new state
         """
-        combination = zip(self.id,self.gpio)
-        gpio = ([i[1] for i in combination if i[0] == device])
-        try:
-            GPIO.setmode(GPIO.BCM)
-            old_state = GPIO.input(int(gpio))
-            if old_state != new_state:
-                GPIO.output(int(gpio),new_state)
-                self.state_change = new_state
-                return True
-            else:
-                return False
-        except:
-            return False
+        gpio = ([i[1] for i in zip(self.id,self.gpio) if i[0] == device])
+        if gpio:
+            try:
+                GPIO.setmode(GPIO.BCM)
+                old_state = GPIO.input(int(gpio))
+                if old_state != new_state:
+                    GPIO.output(int(gpio),new_state)
+                    self.state_change = new_state
+                    return True,new_state
+                else:
+                    return False,old_state
+            except:
+                return False,'Exception occur'
+        else:
+            return False,'Device not found '+device
 
     def save_data(self,payload):
         """
+        This method will be responsible for to save
+        data information into the database and send
+        this data to url defined in the configuration
         :return:
         """
         pass
