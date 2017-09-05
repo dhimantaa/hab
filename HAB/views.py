@@ -32,11 +32,11 @@ def actuation(request, device, state):
     driver.save_data(payload)
     if status:
         return HttpResponse(
-            json.dumps({'Status': 'Success', 'New state': change_state, 'Old state': state}),
+            json.dumps({'Status': 'Success', 'New state': state, 'Old state': change_state}),
             content_type='application/json'
         )
     else:
         return HttpResponse(
-            json.dumps({'Status': 'Failure', 'New state': change_state, 'Old state': state}),
+            json.dumps({'Status': 'Failure', 'New state': 'Unknown', 'Old state': change_state}),
             content_type='application/json'
         )
