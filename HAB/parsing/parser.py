@@ -23,7 +23,7 @@ class Parser:
         Initialize the configuration file path
         """
 
-        self.config_path = os.path.join(settings.BASE_DIR, 'HAB/configuration/'+filename)
+        self.config_path = os.path.join(settings.BASE_DIR, 'HAB/configuration/' + filename)
 
     def read(self):
         """
@@ -31,7 +31,6 @@ class Parser:
         convert it into configobj dictionary
         :return: configobj dictionary of config file
         """
-        print (self.config_path)
 
         return ConfigObj(self.config_path)
 
@@ -43,9 +42,10 @@ class Parser:
         :param tag:
         :return: the value of tag received
         """
-
-        if tag in config.keys():
-            return config[tag]
-        else:
-            for heading in config.keys():
-                self.segregated(config[heading], tag)
+        for key in config.keys():
+            if key == tag:
+                return config[key]
+            elif isinstance(config[key], dict):
+                for key_one in config[key].keys():
+                    if key_one == tag:
+                        return config[key][key_one]
