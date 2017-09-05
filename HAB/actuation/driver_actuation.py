@@ -57,19 +57,25 @@ class Hada:
         gpio mapping vs id in configuration
         :return: status and new state
         """
-        gpio = [i[1] for i in zip(self.id,self.gpio) if i[0] == device]
+        gpio = int([i[1] for i in zip(self.id,self.gpio) if i[0] == device][0])
+
         if gpio:
+
             try:
-                GPIO.setmode(GPIO.BCM)
-                old_state = GPIO.input(int(gpio))
+                GPIO.setmode(GPIO.BOARD)
+                GPIO.setup(gpio, GPIO.OUT)
+                old_state = GPIO.input(gpio)
+
                 if old_state != new_state:
-                    GPIO.output(int(gpio),new_state)
+                    GPIO.output(gpio, new_state)
                     self.state_change = new_state
-                    return True,new_state
+                    return True, old_state
                 else:
                     return False,old_state
+
             except:
                 return False,'Exception occur'
+
         else:
             return False,'Device not found '+device
 

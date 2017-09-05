@@ -26,7 +26,7 @@ def actuation(request, device, state):
     :return: json response of state change
     """
     driver = da.Hada('home.ini')
-    status,change_state = driver.intercept_cmd(state,device)
+    status,old_state = driver.intercept_cmd(int(state), device)
     payload = driver.payload_creation()
     driver.save_data(payload)
     if status:
@@ -35,7 +35,7 @@ def actuation(request, device, state):
                 {
                     'Status': 'Success',
                     'New state': state,
-                    'Old state': change_state
+                    'Old state': old_state
                 }),
             content_type='application/json'
         )
@@ -45,7 +45,7 @@ def actuation(request, device, state):
                 {
                     'Status': 'Failure',
                     'New state': 'Unknown',
-                    'Old state': change_state
+                    'Old state': old_state
                 }),
             content_type='application/json'
         )

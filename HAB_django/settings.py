@@ -25,7 +25,7 @@ SECRET_KEY = 'bsqz(bamle#ll$7be^ndew_!8)xvtm0pml#@fs((9-f+=3fcv2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.220']
+ALLOWED_HOSTS = ['192.168.1.220','192.168.0.107']
 
 
 # Application definition
