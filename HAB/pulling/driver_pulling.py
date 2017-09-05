@@ -12,8 +12,11 @@ server. if fails it will local store the
 data, and try to send later when the
 server is accessible
 """
-
-
+try:
+    import RPi.GPIO as GPIO
+except:
+    pass
+import datetime
 from HAB.parsing.parser import Parser
 
 _author_ = 'dhimantarun19@gmail.com'
@@ -65,11 +68,21 @@ class Hadp:
 
         return payload
 
-    def scrap_data(self):
+    def scrap_data(self, device):
         """
-        :return:
+        This method basically read the gpio state
+        and prepare the data packet to send
+        :return: data object contained the time and GPIO state
         """
-        pass
+        gpio = [i[1] for i in zip(self.id, self.gpio) if i[0] == device]
+        if gpio:
+            try:
+                GPIO.setmode(GPIO.BCM)
+                return [datetime.datetime.now(),GPIO.input(int(self.gpio))]
+            except:
+                return []
+        else:
+            return []
 
     def save_data(self):
         """

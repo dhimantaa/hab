@@ -7,6 +7,7 @@ try:
     import RPi.GPIO as GPIO
 except:
     pass
+import datetime
 from HAB.parsing.parser import Parser
 
 _author_ = 'dhimantarun19@gmail.com'
@@ -46,6 +47,7 @@ class Hada:
         payload['GPIO'] = self.gpio
         payload['DDL'] = self.ddl
         payload['SC'] = self.state_change
+        payload['TIME'] = datetime.datetime.now()
         return payload
 
     def intercept_cmd(self, new_state, device):
@@ -55,7 +57,7 @@ class Hada:
         gpio mapping vs id in configuration
         :return: status and new state
         """
-        gpio = ([i[1] for i in zip(self.id,self.gpio) if i[0] == device])
+        gpio = [i[1] for i in zip(self.id,self.gpio) if i[0] == device]
         if gpio:
             try:
                 GPIO.setmode(GPIO.BCM)
