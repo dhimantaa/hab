@@ -11,56 +11,35 @@ cmd received from vpn server for actuation of
 external device
 """
 
-import requests
-import multiprocessing as mp
+from multiprocessing import process
+from functools import wraps
+from HAB.actuation.driver_actuation import Hada
 
 _author_ = 'dhimantarun19@gmail.com'
 
 
 class Async:
     """
+    This class is responsible to run any function
+    as asynchronously
     """
     def __init__(self):
         """
         """
         pass
 
-    def actuation_cmd_listner(self,device_id=None,state=None,localhost='127.0.0.1',port='8000'):
+    def async_run(self,func):
         """
-        This method basically receive the commands from
-        the views to actuate the hardware
-        This module first check the current state and if
-        state is different it sends request to change the
-        state of hardware, if state are same, it will only
-        the commands to the database
-        :param device_id: external hardware ID
-        :param state: new state to change
-        :param localhost: IP of local server running
-        :param port: Port on which the server is running
-        :return: None
+        :param func: any function to run asynchronously
+        :return: return the wrapped function
         """
-        url = localhost+':'+port+'/device_id='+device_id+'/current_state'
-        current_state = self.get_current_state(url)
-        if current_state != state:
-            url = localhost+':'+port+'/device_id='+device_id+'/new_state='+state
-            if self.send():
-                pass
-            else:
-                pass
-        return None
+        @wraps(func)
+        def async(*args, **kwargs):
+            func_hl = process(target=func, args=args, kwargs=kwargs)
+            func_hl.start()
+            return func_hl
 
-    def send(self,url=None):
-        r = requests.get(url)
-        if r.status_code == 200:
-            return True
-        else:
-            return False
+        return async
 
-    def get_current_state(self,url):
-        r = requests.get(url)
-        if r.status_code == 200:
-            return r.text
-        else:
-            return None
-
-
+if __name__ == '__main__':
+    pass
