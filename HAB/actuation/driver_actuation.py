@@ -123,12 +123,29 @@ class Hada:
         except:
             return False
 
-    def send_data(self):
+    def send_data(self, type):
         """
         This method will send the data to DDL
         define in the configuration
         :return:
         """
-        url = self.ddl
-        act = Error.objects.all()
-        print (act)
+
+        if not type:
+            err = Error.objects.all().order_by('date')
+            for value in err:
+                status_code = self.do_post(value)
+                if status_code:
+                    Error.objects.filter(date=value.date).delete()
+                else:
+                    return False
+        else:
+            act = Actuation.objects.all().order_by('date')
+            for value in act:
+                status_code = self.do_post(value)
+                if status_code:
+                    Actuation.objects.filter(date=value.date).delete()
+                else:
+                    return False
+
+    def do_post(self, data):
+        return True
