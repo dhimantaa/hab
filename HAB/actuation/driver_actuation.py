@@ -7,7 +7,10 @@ try:
     import RPi.GPIO as GPIO
 except:
     pass
+import socket
+import requests
 import datetime
+from ..models import Actuation, Error
 from HAB.parsing.parser import Parser
 
 _author_ = 'dhimantarun19@gmail.com'
@@ -35,19 +38,21 @@ class Hada:
         self.ddl = parser.segregated(parser.read(), 'DATA_DELIVERY_LOCATION')
         self.state_change = None
 
-    def payload_creation(self):
+    def payload_creation(self, device):
         """
         This method create the payload dictionary
         :return: payload contain different information
         """
-        payload = {}
-        payload['UUID'] = self.uuid
-        payload['ID'] = self.id
-        payload['RATE'] = self.rate
-        payload['GPIO'] = self.gpio
-        payload['DDL'] = self.ddl
-        payload['SC'] = self.state_change
-        payload['TIME'] = datetime.datetime.now()
+        gpio = int([i[1] for i in zip(self.id, self.gpio) if i[0] == device][0])
+        payload = {
+            'UUID': self.uuid,
+            'ID': device,
+            'RATE': self.rate,
+            'GPIO': gpio,
+            'DDL': self.ddl,
+            'SC': self.state_change,
+            'TIME': datetime.datetime.now()
+        }
         return payload
 
     def intercept_cmd(self, new_state, device):
@@ -82,8 +87,50 @@ class Hada:
     def save_data(self,payload):
         """
         This method will be responsible for to save
-        data information into the database and send
-        this data to url defined in the configuration
+        data information into the local database
         :return:
         """
-        pass
+        if isinstance(payload['SC'], int):
+            print ('Saving in to actuation')
+            obj = Actuation(
+                key=payload['UUID'],
+                device_id=payload['ID'],
+                rate=payload['RATE'],
+                gpio=payload['GPIO'],
+                state_change=payload['SC'],
+                date=payload['TIME']
+            )
+        else:
+            print ('Saving in to Error')
+            obj = Error(
+                key=payload['UUID'],
+                device_id=payload['ID'],
+                rate=payload['RATE'],
+                gpio=payload['GPIO'],
+                error=1,
+                date=payload['TIME']
+            )
+        obj.save()
+
+    def internet_on(self):
+        """
+        This method is to check,if system is connected
+        to internet or not
+        :return: boolean value, True or False
+        """
+        try:
+            host = socket.gethostbyname('www.google.com')
+            s = socket.create_connection((host,80),2)
+            return True
+        except:
+            return False
+
+    def send_data(self):
+        """
+        This method will send the data to DDL
+        define in the configuration
+        :return:
+        """
+        url = self.ddl
+        act = Actuation.objects.all()
+        print (act)
