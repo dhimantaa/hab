@@ -91,7 +91,6 @@ class Hada:
         :return:
         """
         if isinstance(payload['SC'], int):
-            print ('Saving in to actuation')
             obj = Actuation(
                 key=payload['UUID'],
                 device_id=payload['ID'],
@@ -101,7 +100,6 @@ class Hada:
                 date=payload['TIME']
             )
         else:
-            print ('Saving in to Error')
             obj = Error(
                 key=payload['UUID'],
                 device_id=payload['ID'],

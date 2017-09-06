@@ -29,7 +29,6 @@ def actuation(request, device, state):
     status, old_state = driver.intercept_cmd(int(state), device)
     payload = driver.payload_creation(device)
     if status:
-        print (payload)
         driver.save_data(payload)
         return HttpResponse(
             json.dumps(
@@ -42,7 +41,6 @@ def actuation(request, device, state):
         )
     else:
         payload['SC'] = old_state
-        print (payload)
         driver.save_data(payload)
         return HttpResponse(
             json.dumps(
