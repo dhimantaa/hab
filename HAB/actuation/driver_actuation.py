@@ -76,13 +76,13 @@ class Hada:
                     self.state_change = new_state
                     return True, old_state
                 else:
-                    return False,old_state
+                    return True, old_state
 
             except:
-                return False,'Exception occur'
+                return False, 'Exception occur'
 
         else:
-            return False,'Device not found '+device
+            return False, 'Device not found '+device
 
     def save_data(self,payload):
         """
@@ -132,5 +132,5 @@ class Hada:
         :return:
         """
         url = self.ddl
-        act = Actuation.objects.all()
+        act = Error.objects.all()
         print (act)
