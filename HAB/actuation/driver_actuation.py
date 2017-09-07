@@ -133,7 +133,7 @@ def send_data(type, ddl):
     define in the configuration
     :return:
     """
-
+    print (ddl)
     if not type:
         err = Error.objects.all().order_by('date')
         print ('Error ', err)
@@ -149,6 +149,7 @@ def send_data(type, ddl):
         print ('Actuation ', act)
         for value in act:
             status_code = do_post(value, ddl, type)
+	    print (status_code)
             if status_code:
                 Actuation.objects.filter(date=value.date).delete()
                 print ('Delete row ', value.date)
@@ -157,23 +158,24 @@ def send_data(type, ddl):
 
 
 def do_post(data, ddl, type):
+    print (ddl)
     if type:
         data = {
-            'KEY': data.key,
+            'KEY': str(data.key),
             'ID': data.device_id,
             'RATE': data.rate,
             'GPIO': data.gpio,
             'SC': data.state_change,
-            'DATE': data.date
+            'DATE': str(data.date)
         }
     else:
         data = {
-            'KEY': data.key,
+            'KEY': str(data.key),
             'ID': data.device_id,
             'RATE': data.rate,
             'GPIO': data.gpio,
             'ERROR': data.error,
-            'DATE': data.date
+            'DATE': str(data.date)
         }
     headers = {'content-type': 'application/json'}
     response = requests.post(ddl, data=json.dumps(data),headers=headers)
