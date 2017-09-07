@@ -56,7 +56,7 @@ def actuation(request, device, state):
 
 def send(request):
     print ('Creating background task for Error values')
-    da.send_data(False, repeat=int(driver.rate))
+    da.send_data(False, driver.ddl, repeat=int(driver.rate))
     print ('Creating background task for data values')
-    da.send_data(True, repeat=int(driver.rate))
+    da.send_data(True, driver.ddl, repeat=int(driver.rate))
     return JsonResponse({},status=302)

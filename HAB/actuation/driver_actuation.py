@@ -8,6 +8,7 @@ try:
 except:
     pass
 
+import json
 import socket
 import requests
 import datetime
@@ -27,6 +28,7 @@ class Hada:
     2 - intercept command
     3 - save the result
     """
+
     def __init__(self, filename):
         """
         This constructor initialize the the parameter required
@@ -65,9 +67,9 @@ class Hada:
         :return: status and new state
         """
         try:
-            gpio = int([i[1] for i in zip(self.id,self.gpio) if i[0] == device][0])
+            gpio = int([i[1] for i in zip(self.id, self.gpio) if i[0] == device][0])
         except:
-            return False, 'Device not found '+device
+            return False, 'Device not found ' + device
 
         try:
             GPIO.setmode(GPIO.BOARD)
@@ -84,8 +86,7 @@ class Hada:
         except:
             return False, 'Exception occur'
 
-
-    def save_data(self,payload):
+    def save_data(self, payload):
         """
         This method will be responsible for to save
         data information into the local database
@@ -126,7 +127,7 @@ class Hada:
 
 
 @background(schedule=120)
-def send_data(type):
+def send_data(type, ddl):
     """
     This method will send the data to DDL
     define in the configuration
@@ -137,7 +138,7 @@ def send_data(type):
         err = Error.objects.all().order_by('date')
         print ('Error ', err)
         for value in err:
-            status_code = do_post(value)
+            status_code = do_post(value, ddl, type)
             if status_code:
                 Error.objects.filter(date=value.date).delete()
                 print ('Delete row ', value.date)
@@ -147,7 +148,7 @@ def send_data(type):
         act = Actuation.objects.all().order_by('date')
         print ('Actuation ', act)
         for value in act:
-            status_code = do_post(value)
+            status_code = do_post(value, ddl, type)
             if status_code:
                 Actuation.objects.filter(date=value.date).delete()
                 print ('Delete row ', value.date)
@@ -155,6 +156,28 @@ def send_data(type):
                 return False
 
 
-def do_post(data):
-    print ('sending data')
-    return True
+def do_post(data, ddl, type):
+    if type:
+        data = {
+            'KEY': data.key,
+            'ID': data.device_id,
+            'RATE': data.rate,
+            'GPIO': data.gpio,
+            'SC': data.state_change,
+            'DATE': data.date
+        }
+    else:
+        data = {
+            'KEY': data.key,
+            'ID': data.device_id,
+            'RATE': data.rate,
+            'GPIO': data.gpio,
+            'ERROR': data.error,
+            'DATE': data.date
+        }
+    headers = {'content-type': 'application/json'}
+    response = requests.post(ddl, data=json.dumps(data),headers=headers)
+    if response.status_code == 200:
+        return True
+    else:
+        return False
