@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from parsing.parser import Parser
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import HAB.actuation.driver_actuation as da
 import json
 
 obj = Parser(filename='home.ini')
+driver = da.Hada('home.ini')
 
 
 def index(request):
@@ -25,7 +26,7 @@ def actuation(request, device, state):
     :param state: contain the new state to change
     :return: json response of state change
     """
-    driver = da.Hada('home.ini')
+
     status, old_state = driver.intercept_cmd(int(state), device)
     payload = driver.payload_creation(device)
     if status:
@@ -51,3 +52,11 @@ def actuation(request, device, state):
                 }),
             content_type='application/json'
         )
+
+
+def send(request):
+    print ('Creating background task for Error values')
+    da.send_data(False, repeat=10)
+    print ('Creating background task for data values')
+    da.send_data(True, repeat=10)
+    return JsonResponse({},status=302)

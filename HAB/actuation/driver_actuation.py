@@ -7,9 +7,11 @@ try:
     import RPi.GPIO as GPIO
 except:
     pass
+
 import socket
 import requests
 import datetime
+from background_task import background
 from ..models import Actuation, Error
 from HAB.parsing.parser import Parser
 
@@ -62,27 +64,26 @@ class Hada:
         gpio mapping vs id in configuration
         :return: status and new state
         """
-        gpio = int([i[1] for i in zip(self.id,self.gpio) if i[0] == device][0])
-
-        if gpio:
-
-            try:
-                GPIO.setmode(GPIO.BOARD)
-                GPIO.setup(gpio, GPIO.OUT)
-                old_state = GPIO.input(gpio)
-
-                if old_state != new_state:
-                    GPIO.output(gpio, new_state)
-                    self.state_change = new_state
-                    return True, old_state
-                else:
-                    return True, old_state
-
-            except:
-                return False, 'Exception occur'
-
-        else:
+        try:
+            gpio = int([i[1] for i in zip(self.id,self.gpio) if i[0] == device][0])
+        except:
             return False, 'Device not found '+device
+
+        try:
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(gpio, GPIO.OUT)
+            old_state = GPIO.input(gpio)
+
+            if old_state != new_state:
+                GPIO.output(gpio, new_state)
+                self.state_change = new_state
+                return True, old_state
+            else:
+                return True, old_state
+
+        except:
+            return False, 'Exception occur'
+
 
     def save_data(self,payload):
         """
@@ -118,34 +119,42 @@ class Hada:
         """
         try:
             host = socket.gethostbyname('www.google.com')
-            s = socket.create_connection((host,80),2)
+            s = socket.create_connection((host, 80), 2)
             return True
         except:
             return False
 
-    def send_data(self, type):
-        """
-        This method will send the data to DDL
-        define in the configuration
-        :return:
-        """
 
-        if not type:
-            err = Error.objects.all().order_by('date')
-            for value in err:
-                status_code = self.do_post(value)
-                if status_code:
-                    Error.objects.filter(date=value.date).delete()
-                else:
-                    return False
-        else:
-            act = Actuation.objects.all().order_by('date')
-            for value in act:
-                status_code = self.do_post(value)
-                if status_code:
-                    Actuation.objects.filter(date=value.date).delete()
-                else:
-                    return False
+@background(schedule=120)
+def send_data(type):
+    """
+    This method will send the data to DDL
+    define in the configuration
+    :return:
+    """
 
-    def do_post(self, data):
-        return True
+    if not type:
+        err = Error.objects.all().order_by('date')
+        print ('Error ', err)
+        for value in err:
+            status_code = do_post(value)
+            if status_code:
+                Error.objects.filter(date=value.date).delete()
+                print ('Delete row ', value.date)
+            else:
+                return False
+    else:
+        act = Actuation.objects.all().order_by('date')
+        print ('Actuation ', act)
+        for value in act:
+            status_code = do_post(value)
+            if status_code:
+                Actuation.objects.filter(date=value.date).delete()
+                print ('Delete row ', value.date)
+            else:
+                return False
+
+
+def do_post(data):
+    print ('sending data')
+    return True

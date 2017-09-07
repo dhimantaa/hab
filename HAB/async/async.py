@@ -13,7 +13,6 @@ external device
 
 from multiprocessing import process
 from functools import wraps
-from HAB.actuation.driver_actuation import Hada
 
 _author_ = 'dhimantarun19@gmail.com'
 
@@ -42,4 +41,17 @@ class Async:
         return async
 
 if __name__ == '__main__':
+    async = Async()
+    ha = Hada('home.ini')
+
+    @async.async_run
+    def run_error():
+        print ('Running for error')
+        ha.send_data(False)
+
+    @async.async_run
+    def run_data():
+        print ('Running for data')
+        ha.send_data(True)
+
     pass
