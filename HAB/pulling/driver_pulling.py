@@ -16,7 +16,11 @@ try:
     import RPi.GPIO as GPIO
 except:
     pass
+import json
 import datetime
+import requests
+from ..models import Data
+from background_task import background
 from HAB.parsing.parser import Parser
 
 _author_ = 'dhimantarun19@gmail.com'
@@ -44,7 +48,7 @@ class Hadp:
         self.gpio = parser.segregated(parser.read(),'GPIO')
         self.ddl = parser.segregated(parser.read(),'DATA_DELIVERY_LOCATION')
 
-    def payload_creation(self, data):
+    def payload_creation(self, id, data):
         """
         This method create the payload
         UUID: unique identification key
@@ -57,15 +61,15 @@ class Hadp:
         :return: dictionary of payload
         """
 
-        payload = {}
-        payload['UUID'] = self.uuid
-        payload['ID'] = self.id
-        payload['RATE'] = self.rate
-        payload['GPIO'] = self.gpio
-        payload['DDL'] = self.ddl
-        payload['VALUE'] = data[0]
-        payload['TIME'] = data[1]
-
+        payload = {
+            'UUID': self.uuid,
+            'ID': id,
+            'RATE': self.rate,
+            'GPIO': data[2],
+            'DDL': self.ddl,
+            'VALUE': data[1],
+            'TIME': data[0]
+        }
         return payload
 
     def scrap_data(self, device):
@@ -74,18 +78,73 @@ class Hadp:
         and prepare the data packet to send
         :return: data object contained the time and GPIO state
         """
-        gpio = [i[1] for i in zip(self.id, self.gpio) if i[0] == device]
-        if gpio:
+        data = {}
+        for i in zip(self.id, self.gpio):
             try:
-                GPIO.setmode(GPIO.BCM)
-                return [datetime.datetime.now(),GPIO.input(int(self.gpio))]
+                GPIO.setmode(GPIO.BOARD)
+                GPIO.setup(int(i[1]), GPIO.OUT)
+                data[i[0]] = [datetime.datetime.now(), GPIO.input(int(i[1])), i[1]]
             except:
-                return []
-        else:
-            return []
+                data[i[0]] = [datetime.datetime.now(), None, i[1]]
 
-    def save_data(self):
+        return data
+
+    def save_data(self, payload):
         """
+        This method will be responsible for to save
+        data information into the local database
+        :param payload:
         :return:
         """
-        pass
+        obj = Data(
+            key=payload['UUID'],
+            device_id=payload['ID'],
+            rate=payload['RATE'],
+            state=payload['VALUE'],
+            date=payload['TIME']
+        )
+        obj.save()
+
+
+@background(schedule=120)
+def send_data(ddl):
+    """
+    This method will send the data to DDL
+    define in the configuration
+    :return:
+    """
+    print (ddl)
+    err = Data.objects.all().order_by('date')
+    print ('Error ', err)
+    for value in err:
+        status_code = do_post(value, ddl, type)
+        if status_code:
+            Data.objects.filter(date=value.date).delete()
+            print ('Delete row ', value.date)
+        else:
+            return False
+
+
+def do_post(data, ddl):
+    """
+    This method will send the pulling data
+    to server url defined inside the configuration
+    file.
+    :param data: Pulling data, device status
+    :param ddl: data delivery location
+    :return: Boolean values on the basis of podt request status
+    """
+    print (ddl)
+    data = {
+        'KEY': str(data.key),
+        'ID': data.device_id,
+        'RATE': data.rate,
+        'VALUE': data.state,
+        'DATE': str(data.date)
+    }
+    headers = {'content-type': 'application/json'}
+    response = requests.post(ddl, data=json.dumps(data),headers=headers)
+    if response.status_code == 200:
+        return True
+    else:
+        return False
