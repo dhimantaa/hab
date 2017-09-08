@@ -149,7 +149,7 @@ def send_data(type, ddl):
         print ('Actuation ', act)
         for value in act:
             status_code = do_post(value, ddl, type)
-	    print (status_code)
+            print (status_code)
             if status_code:
                 Actuation.objects.filter(date=value.date).delete()
                 print ('Delete row ', value.date)
@@ -158,6 +158,15 @@ def send_data(type, ddl):
 
 
 def do_post(data, ddl, type):
+    """
+    This method will send the actuation and error
+    data to server url defined inside the configuration
+    file.
+    :param data: contains the values
+    :param ddl: data delivery location
+    :param type: Actuation or Error
+    :return: Boolean values on the basis of post request status
+    """
     print (ddl)
     if type:
         data = {
